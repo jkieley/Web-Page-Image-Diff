@@ -19,7 +19,8 @@
     return driver.takeScreenshot().then(function(image, err) {
       console.log('write file! ', imageName);
       return fsp.writeFile(imageName + ".png", image, 'base64').then(function(err) {
-        return console.log('done writing: ', imageName);
+        console.log('done writing: ', imageName);
+        return files.push(imageName);
       });
     });
   };
