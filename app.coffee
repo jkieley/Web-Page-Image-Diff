@@ -14,6 +14,7 @@ takeScreenshot = (url,imageName)->
     console.log 'write file! ',imageName
     return fsp.writeFile("#{imageName}.png", image, 'base64').then((err)->
       console.log 'done writing: ', imageName
+      files.push(imageName)
     )
   )
 
