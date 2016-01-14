@@ -1,6 +1,7 @@
 webdriver = require('selenium-webdriver')
 fsp = require('fs-promise')
-
+fs = require('fs')
+resemble = require('node-resemble.js')
 
 driver = (new (webdriver.Builder)).withCapabilities(webdriver.Capabilities.firefox()).build()
 driver.manage().window().maximize()
@@ -12,16 +13,17 @@ takeScreenshot = (url,imageName)->
   driver.get url
   return driver.takeScreenshot().then((image, err) ->
     console.log 'write file! ',imageName
-    return fsp.writeFile("#{imageName}.png", image, 'base64').then((err)->
+    return fsp.writeFile(imageName, image, 'base64').then((err)->
       console.log 'done writing: ', imageName
       files.push(imageName)
     )
   )
 
-takeScreenshot('http://dev-lifelock.samsclub.com/', 'dev-lifelock').then(->
-  takeScreenshot('http://lifelock.samsclub.com/', 'prod')
+takeScreenshot('http://dev-lifelock.samsclub.com/', 'dev-lifelock.png').then(->
+  takeScreenshot('http://lifelock.samsclub.com/', 'prod.png')
 ).then(->
-  console.log 'both are done'
+  resemble(fs.readFileSync(files[0])).compareTo(fs.readFileSync(files[1])).ignoreColors().onComplete (data) ->
+    console.log data
 )
 
 
