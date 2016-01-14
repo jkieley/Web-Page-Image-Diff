@@ -22,9 +22,20 @@ takeScreenshot = (url,imageName)->
 takeScreenshot('http://dev-lifelock.samsclub.com/', 'dev-lifelock.png').then(->
   takeScreenshot('http://lifelock.samsclub.com/', 'prod.png')
 ).then(->
-  resemble(fs.readFileSync(files[0])).compareTo(fs.readFileSync(files[1])).ignoreColors().onComplete (data) ->
-    console.log data
+  resemble(fs.readFileSync(files[0])).compareTo(fs.readFileSync(files[1])).onComplete (data) ->
+    console.log 'Percentage of Difference: ', data.misMatchPercentage + "%"
+    png = data.getDiffImage()
+    png.pack().pipe fs.createWriteStream('out.png')
+    png.on 'parsed', ->
+      png.pack().pipe fs.createWriteStream('out.png')
+
 )
+
+
+
+
+
+
 
 
 driver.quit()
