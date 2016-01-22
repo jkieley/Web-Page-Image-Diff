@@ -8,6 +8,7 @@ driver.manage().window().maximize()
 driver.manage().window().setSize(1440, 900);
 
 files = []
+diffCount = 0
 
 takeScreenshot = (url,imageName)->
   driver.get url
@@ -19,19 +20,23 @@ takeScreenshot = (url,imageName)->
     )
   )
 
-takeScreenshot('http://dev-lifelock.samsclub.com/', 'dev-lifelock.png').then(->
-  takeScreenshot('http://lifelock.samsclub.com/', 'prod.png')
-).then(->
-  resemble(fs.readFileSync(files[0])).compareTo(fs.readFileSync(files[1])).onComplete (data) ->
-    console.log 'Percentage of Difference: ', data.misMatchPercentage + "%"
-    png = data.getDiffImage()
-    png.pack().pipe fs.createWriteStream('out.png')
-    png.on 'parsed', ->
-      png.pack().pipe fs.createWriteStream('out.png')
+generateImageDiff = (url1,url2)->
+  image1 = "img-#{files.length}.png"
+  takeScreenshot(url1, image1).then(->
+    image2 = "img-#{files.length}.png"
+    takeScreenshot(url2, image2)
+  ).then(->
+    resemble(fs.readFileSync(files[0])).compareTo(fs.readFileSync(files[1])).onComplete (data) ->
+      console.log 'Percentage of Difference: ', data.misMatchPercentage + "%"
+      png = data.getDiffImage()
+      imageName = "out-#{diffCount++}.png"
+      png.pack().pipe fs.createWriteStream(imageName)
+      png.on 'parsed', ->
+        png.pack().pipe fs.createWriteStream(imageName)
 
-)
+  )
 
-
+generateImageDiff('http://localhost:8080/','http://lifelock.samsclub.com/')
 
 
 
